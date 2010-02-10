@@ -51,7 +51,7 @@ public class Configuration {
 
 	public int framesPerSecond = 25;
 
-	public double reflectionOpacity = 1.0 / 3;
+	public double reflectionOpacity = 1.0 / 4;
 
 	public double darkeningFactor = 3;
 
