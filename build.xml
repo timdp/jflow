@@ -24,7 +24,7 @@
 		<jar jarfile="${jar.base}" includes="${pkg.base}/**/*.class" excludes="${pkg.demo}/**" basedir="${dir.bin}" />
 	</target>
 	<target name="all" depends="jar">
-		<replaceregexp file="${manifest}" match="jflow\S*.jar" replace="jflow${suffix}.jar" byline="true" />
+		<replaceregexp file="${manifest}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
 		<jar jarfile="${jar.demo}" includes="${pkg.demo}/**" manifest="${manifest}" basedir="${dir.bin}" />
 	</target>
 </project>
