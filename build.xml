@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Flow" default="all" basedir=".">
+<project name="JFlow" default="all" basedir=".">
 	<property name="version" value="trunk" />
 	<property name="suffix" value="-${version}" />
 	<property name="dir.src" value="src" />
