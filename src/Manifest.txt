@@ -1,1 +1,0 @@
-Main-Class: be.pwnt.jflow.demo.Launcher

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Flow" default="all" basedir=".">
+	<property name="version" value="trunk" />
+	<property name="suffix" value="-${version}" />
+	<property name="dir.src" value="src" />
+	<property name="dir.bin" value="bin" />
+	<target name="prepare">
+		<mkdir dir="${dir.bin}" />
+	</target>
+	<target name="compile" depends="prepare">
+		<javac srcdir="${dir.src}" destdir="${dir.bin}" />
+		<copy todir="${dir.bin}/be/pwnt/jflow/demo/img">
+			<fileset dir="${dir.src}/be/pwnt/jflow/demo/img" />
+		</copy>
+	</target>
+	<target name="jar" depends="compile">
+		<jar jarfile="jflow${suffix}.jar" includes="**/*.class" excludes="be/pwnt/jflow/demo/**" basedir="${dir.bin}" />
+	</target>
+	<target name="all" depends="jar">
+		<replaceregexp file="Manifest.txt" match="jflow\S*.jar" replace="jflow${suffix}.jar" byline="true" />
+		<jar jarfile="jflow-demo${suffix}.jar" includes="be/pwnt/jflow/demo/**" manifest="Manifest.txt" basedir="${dir.bin}" />
+	</target>
+</project>
