@@ -4,6 +4,7 @@
 	<property name="suffix" value="-${version}" />
 	<property name="dir.src" value="src" />
 	<property name="dir.bin" value="bin" />
+	<property name="manifest" value="${dir.src}/META-INF/MANIFEST.MF" />
 	<target name="prepare">
 		<mkdir dir="${dir.bin}" />
 	</target>
@@ -14,10 +15,10 @@
 		</copy>
 	</target>
 	<target name="jar" depends="compile">
-		<jar jarfile="jflow${suffix}.jar" includes="**/*.class" excludes="be/pwnt/jflow/demo/**" basedir="${dir.bin}" />
+		<jar jarfile="jflow${suffix}.jar" includes="be/pwnt/jflow/**/*.class" excludes="be/pwnt/jflow/demo/**" basedir="${dir.bin}" />
 	</target>
 	<target name="all" depends="jar">
-		<replaceregexp file="Manifest.txt" match="jflow\S*.jar" replace="jflow${suffix}.jar" byline="true" />
-		<jar jarfile="jflow-demo${suffix}.jar" includes="be/pwnt/jflow/demo/**" manifest="Manifest.txt" basedir="${dir.bin}" />
+		<replaceregexp file="${manifest}" match="jflow\S*.jar" replace="jflow${suffix}.jar" byline="true" />
+		<jar jarfile="jflow-demo${suffix}.jar" includes="be/pwnt/jflow/demo/**" manifest="${manifest}" basedir="${dir.bin}" />
 	</target>
 </project>
