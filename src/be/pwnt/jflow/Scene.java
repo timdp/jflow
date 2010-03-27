@@ -26,15 +26,15 @@ import be.pwnt.jflow.geometry.RotationMatrix;
 public class Scene {
 	private Point3D cameraLocation;
 
-	private RotationMatrix cameraRotationMatrix;
+	private RotationMatrix cameraRotation;
 
-	private Point3D viewerPosition;
+	private Point3D viewerLocation;
 
-	public Scene(Point3D cameraLocation, RotationMatrix cameraRotationMatrix,
-			Point3D viewerPosition) {
+	public Scene(Point3D cameraLocation, RotationMatrix cameraRotation,
+			Point3D viewerLocation) {
 		setCameraLocation(cameraLocation);
-		setCameraRotationMatrix(cameraRotationMatrix);
-		setViewerPosition(viewerPosition);
+		setCameraRotation(cameraRotation);
+		setViewerLocation(viewerLocation);
 	}
 
 	public Point3D getCameraLocation() {
@@ -45,25 +45,25 @@ public class Scene {
 		this.cameraLocation = cameraLocation;
 	}
 
-	public RotationMatrix getCameraRotationMatrix() {
-		return cameraRotationMatrix;
+	public RotationMatrix getCameraRotation() {
+		return cameraRotation;
 	}
 
-	public void setCameraRotationMatrix(RotationMatrix cameraRotationMatrix) {
-		this.cameraRotationMatrix = cameraRotationMatrix;
+	public void setCameraRotation(RotationMatrix cameraRotationMatrix) {
+		this.cameraRotation = cameraRotationMatrix;
 	}
 
-	public Point3D getViewerPosition() {
-		return viewerPosition;
+	public Point3D getViewerLocation() {
+		return viewerLocation;
 	}
 
-	public void setViewerPosition(Point3D viewerPosition) {
-		this.viewerPosition = viewerPosition;
+	public void setViewerLocation(Point3D viewerLocation) {
+		this.viewerLocation = viewerLocation;
 	}
 
 	public Point3D project(Point3D a, Dimension surfaceSize) {
-		RotationMatrix rot = getCameraRotationMatrix();
-		Point3D e = getViewerPosition();
+		RotationMatrix rot = getCameraRotation();
+		Point3D e = getViewerLocation();
 		Point3D d = new Point3D(a.subtract(getCameraLocation()));
 		d.rotate(rot);
 		// maintain aspect ratio

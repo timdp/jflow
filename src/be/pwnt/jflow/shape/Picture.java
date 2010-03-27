@@ -38,15 +38,16 @@ public class Picture extends Rectangle {
 
 	private Point3D[] projectedPoints;
 
-	private URL url;
-
-	public Picture(URL url) throws IOException {
+	public Picture(BufferedImage image) {
 		super(new Point3D(0, 0, 0), new Point3D(0, 0, 0), Color.black);
-		this.url = url;
-		image = ImageIO.read(url);
+		this.image = image;
 		projectedPoints = new Point3D[4];
 		setCoordinates(new Point3D(0, 0, 0), new Point3D(image.getWidth(),
 				image.getHeight(), 0));
+	}
+
+	public Picture(URL url) throws IOException {
+		this(ImageIO.read(url));
 	}
 
 	public int getWidth() {
@@ -55,11 +56,6 @@ public class Picture extends Rectangle {
 
 	public int getHeight() {
 		return image.getHeight();
-	}
-
-	@Override
-	public String toString() {
-		return url.getFile();
 	}
 
 	// XXX only works for convex 2D polygons

@@ -42,6 +42,7 @@ public class Applet extends JApplet {
 					}
 					final JFlowPanel panel = new JFlowPanel(new Configuration());
 					panel.addListener(new ShapeListener() {
+						@Override
 						public void shapeClicked(ShapeEvent e) {
 							MouseEvent me = e.getMouseEvent();
 							if (!me.isConsumed()
