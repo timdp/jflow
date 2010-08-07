@@ -325,10 +325,19 @@ public class JFlowPanel extends JPanel implements MouseListener,
 				Shape newActiveShape = null;
 				if (mp != null) {
 					Point3D p = new Point3D(mp.getX(), mp.getY(), 0);
-					int i = 0;
-					while (i < config.shapes.length && newActiveShape == null) {
-						if (config.shapes[i].contains(p)) {
-							newActiveShape = config.shapes[i];
+					int i = untranspose(config.shapes.length / 2);
+					if (config.shapes[i].contains(p)) {
+						newActiveShape = config.shapes[i];
+					}
+					i = 1;
+					while (i <= config.shapes.length / 2
+							&& newActiveShape == null) {
+						int j = untranspose(config.shapes.length / 2 - i);
+						int k = untranspose(config.shapes.length / 2 + i);
+						if (config.shapes[j].contains(p)) {
+							newActiveShape = config.shapes[j];
+						} else if (config.shapes[k].contains(p)) {
+							newActiveShape = config.shapes[k];
 						}
 						i++;
 					}
