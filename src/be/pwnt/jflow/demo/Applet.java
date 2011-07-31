@@ -1,5 +1,5 @@
 /*
- * JFlow v0.2
+ * JFlow v0.3
  * Created by Tim De Pauw <http://pwnt.be/>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ import be.pwnt.jflow.event.ShapeEvent;
 import be.pwnt.jflow.event.ShapeListener;
 
 @SuppressWarnings("serial")
-public class Applet extends JApplet {
+public class Applet extends JApplet implements ShapeListener {
 	public void init() {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
@@ -41,31 +41,30 @@ public class Applet extends JApplet {
 					} catch (Exception e) {
 					}
 					final JFlowPanel panel = new JFlowPanel(new Configuration());
-					panel.addListener(new ShapeListener() {
-						@Override
-						public void shapeClicked(ShapeEvent e) {
-							MouseEvent me = e.getMouseEvent();
-							if (!me.isConsumed()
-									&& me.getButton() == MouseEvent.BUTTON1
-									&& me.getClickCount() == 1) {
-								JOptionPane.showMessageDialog(panel, e
-										.getShape(), "Test",
-										JOptionPane.INFORMATION_MESSAGE);
-							}
-						}
-
-						@Override
-						public void shapeActivated(ShapeEvent e) {
-						}
-
-						@Override
-						public void shapeDeactivated(ShapeEvent e) {
-						}
-					});
+					panel.addListener(Applet.this);
 					getContentPane().add(panel);
 				}
 			});
 		} catch (Exception e) {
 		}
+	}
+
+	@Override
+	public void shapeClicked(ShapeEvent e) {
+		MouseEvent me = e.getMouseEvent();
+		if (!me.isConsumed() && me.getButton() == MouseEvent.BUTTON1
+				&& me.getClickCount() == 1) {
+			JOptionPane.showMessageDialog(this,
+					"You clicked on " + e.getShape() + ".", "Event Test",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
+
+	@Override
+	public void shapeActivated(ShapeEvent e) {
+	}
+
+	@Override
+	public void shapeDeactivated(ShapeEvent e) {
 	}
 }

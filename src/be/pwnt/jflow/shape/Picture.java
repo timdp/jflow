@@ -1,5 +1,5 @@
 /*
- * JFlow v0.2
+ * JFlow v0.3
  * Created by Tim De Pauw <http://pwnt.be/>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,12 @@
 
 package be.pwnt.jflow.shape;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -84,6 +87,7 @@ public class Picture extends Rectangle {
 	@Override
 	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
 			boolean active, Configuration config) {
+		Graphics2D g = (Graphics2D) graphics;
 		Point3D loc = getLocation();
 		RotationMatrix rot = getRotationMatrix();
 		List<Point3D> points = getPoints();
@@ -98,108 +102,99 @@ public class Picture extends Rectangle {
 			i++;
 		}
 		// XXX assumes too much about order
-		Point3D topRight = proj[0], topLeft = proj[1], bottomLeft = proj[2], bottomRight = proj[3];
-		if (topRight.getX() < 0 || topLeft.getX() >= surfaceSize.getWidth()) {
+		Point3D bottomR = proj[0], bottomL = proj[1], topL = proj[2], topR = proj[3];
+		if (bottomR.getX() < 0 || bottomL.getX() >= surfaceSize.getWidth()) {
 			projectedPoints[0] = null;
 			return;
 		}
-		projectedPoints[0] = bottomLeft;
-		projectedPoints[1] = bottomRight;
-		projectedPoints[2] = topRight;
-		projectedPoints[3] = topLeft;
-		if (bottomLeft.getX() != topLeft.getX()
-				|| bottomRight.getX() != topRight.getX()) {
+		projectedPoints[0] = topL;
+		projectedPoints[1] = topR;
+		projectedPoints[2] = bottomR;
+		projectedPoints[3] = bottomL;
+		if (topL.getX() != bottomL.getX() || topR.getX() != bottomR.getX()) {
 			throw new RuntimeException();
 		}
-		double x0 = bottomLeft.getX();
-		double x1 = bottomRight.getX();
-		double y0 = Math.min(bottomLeft.getY(), bottomRight.getY());
-		double y1 = Math.max(topLeft.getY(), topRight.getY());
-		double heightLeft = topLeft.getY() - bottomLeft.getY();
-		double heightRight = topRight.getY() - bottomRight.getY();
+		double x0 = topL.getX();
+		double x1 = topR.getX();
+		double y0 = Math.min(topL.getY(), topR.getY());
+		double heightLeft = bottomL.getY() - topL.getY();
+		double heightRight = bottomR.getY() - topR.getY();
 		int w = (int) Math.round(x1 - x0);
-		int h = (int) Math.round(y1 - y0) * 2;
-		if (w <= 0 || h <= 0) {
+		if (w <= 0) {
 			projectedPoints[0] = null;
 			return;
 		}
-		BufferedImage pic = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		double dt = bottomRight.getY() - bottomLeft.getY();
+		double dt = topR.getY() - topL.getY();
 		boolean mirror = (dt < 0);
 		if (mirror) {
 			dt = -dt;
 		}
-		int borderRgb = config.activeShapeBorderColor.getRGB();
+		// reflection
+		if (config.reflectionOpacity > 0) {
+			for (int x = 0; x < w; x++) {
+				double d = 1.0 * x / w;
+				int xo = (int) Math.round(d * image.getWidth());
+				int xt = (int) Math.round(x0 + x);
+				double colY = dt * (mirror ? 1 - d : d);
+				double colH = heightLeft + (heightRight - heightLeft) * d;
+				int ryt0 = (int) Math.floor(y0 + colY + colH);
+				int ryt1 = (int) Math.floor(y0 + colY + colH + colH);
+				g.drawImage(image, xt, ryt1, xt + 1, ryt0, xo, 0, xo + 1,
+						image.getHeight(), null);
+			}
+			int l = (int) Math.round(x0);
+			int r = (int) Math.round(x0 + w);
+			int[] xPoints = new int[] { l, r, r, l };
+			int[] yPoints = new int[] {
+					(int) Math.floor(topL.getY() + heightLeft),
+					(int) Math.floor(topR.getY() + heightRight),
+					(int) Math.ceil(bottomR.getY() + heightRight),
+					(int) Math.ceil(bottomL.getY() + heightLeft) };
+			g.setColor(new Color(0f, 0f, 0f,
+					(float) (1 - config.reflectionOpacity)));
+			g.fillPolygon(xPoints, yPoints, 4);
+		}
+		// shade & image
 		for (int x = 0; x < w; x++) {
 			double d = 1.0 * x / w;
 			int xo = (int) Math.round(d * image.getWidth());
+			int xt = (int) Math.round(x0 + x);
 			double colY = dt * (mirror ? 1 - d : d);
 			double colH = heightLeft + (heightRight - heightLeft) * d;
-			double z = constrain(-bottomLeft.getZ()
-					- (bottomRight.getZ() - bottomLeft.getZ()) * d, 0,
+			double z = constrain(
+					-topL.getZ() - (topR.getZ() - topL.getZ()) * d, 0,
 					Double.MAX_VALUE);
-			double darkening = constrain(1 - config.darkeningFactor * z, 0, 1);
-			int ys = (int) Math.round(colY);
-			int ym = (int) Math.round(colY + colH);
-			for (double y = ys; y < ym; y++) {
-				double yr = (y - colY) / colH;
-				int yo = (int) Math.round(yr * image.getHeight());
-				int rgb = image.getRGB(constrain(xo, 0, image.getWidth() - 1),
-						constrain(yo, 0, image.getHeight() - 1));
-				rgb = setIntensity(rgb, darkening, config);
-				if (config.reflectionOpacity > 0) {
-					int ry = (int) Math.round(colY + colH + colH - (y - colY)
-							- config.pictureReflectionOverlap);
-					double alpha = yr * config.reflectionOpacity;
-					int rrgb = setIntensity(rgb, alpha, config);
-					pic.setRGB(x, constrain(ry, (int) Math.round(colY + colH),
-							pic.getHeight() - 1), rrgb);
-				}
-				if (active
-						&& (x < config.activeShapeBorderWidth
-								|| x > w - 1 - config.activeShapeBorderWidth
-								|| y < ys + config.activeShapeBorderWidth || y > ym
-								- 1 - config.activeShapeBorderWidth)) {
-					rgb = (config.darkenBorder ? setIntensity(borderRgb,
-							darkening, config) : borderRgb);
-				}
-				pic.setRGB(x, constrain((int) Math.round(y), 0, (int) Math
-						.round(colY + colH) - 1), rgb);
+			double ys = colY;
+			double ym = colY + colH;
+			int yt = (int) Math.round(y0 + ys);
+			int yb = (int) Math.round(y0 + ym);
+			g.drawImage(image, xt, yt, xt + 1, yb, xo, 0, xo + 1,
+					image.getHeight(), null);
+			float shadeOpacity = (float) constrain(config.shadingFactor * z, 0,
+					1);
+			if (shadeOpacity > 0) {
+				g.setColor(new Color(0f, 0f, 0f, shadeOpacity));
+				g.drawLine(xt, yt, xt, yb + yb);
 			}
 		}
-		graphics.drawImage(pic, (int) Math.round(x0), (int) Math.round(y0),
-				null);
-	}
-
-	private static int constrain(int a, int min, int max) {
-		return a < min ? min : (a > max ? max : a);
+		// border
+		if (active) {
+			int l = (int) Math.round(x0);
+			int r = (int) Math.round(x0 + w);
+			int[] xPoints = new int[] { l, r, r, l };
+			int[] yPoints = new int[] { (int) Math.round(topL.getY()),
+					(int) Math.round(topR.getY()),
+					(int) Math.round(bottomR.getY()),
+					(int) Math.round(bottomL.getY()) };
+			g.setColor(config.activeShapeBorderColor);
+			Stroke oldStroke = g.getStroke();
+			g.setStroke(new BasicStroke(config.activeShapeBorderWidth));
+			g.drawPolygon(xPoints, yPoints, 4);
+			g.setStroke(oldStroke);
+		}
 	}
 
 	private static double constrain(double a, double min, double max) {
 		return a < min ? min : (a > max ? max : a);
-	}
-
-	private static int setIntensity(int rgb, double f, Configuration config) {
-		if (config.enableAlphaTransparency) {
-			// XXX doesn't handle overlapping well
-			return setColorOpacity(rgb, f);
-		} else {
-			return blendColors(rgb, config.backgroundColor.getRGB(), f);
-		}
-	}
-
-	private static int blendColors(int rgb1, int rgb2, double f) {
-		int rgb = 0;
-		for (int i = 0; i < 32; i += 8) {
-			rgb |= ((int) ((0xFF & (rgb1 >>> i)) * f + (0xFF & (rgb2 >>> i))
-					* (1 - f))) << i;
-		}
-		return rgb;
-	}
-
-	private static int setColorOpacity(int rgb, double f) {
-		int alpha = (rgb >>> 24) & 0xFF;
-		alpha *= f;
-		return (rgb & 0x00FFFFFF) | (alpha << 24);
 	}
 }

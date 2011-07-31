@@ -1,5 +1,5 @@
 /*
- * JFlow v0.2
+ * JFlow v0.3
  * Created by Tim De Pauw <http://pwnt.be/>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -52,16 +52,12 @@ public class Configuration {
 	public int framesPerSecond = 25;
 
 	public double reflectionOpacity = 1.0 / 4;
-
-	public double darkeningFactor = 3;
-
-	public boolean darkenBorder = true;
+	
+	public double shadingFactor = 3;
 
 	public double zoomScale = 2;
 
 	public double zoomFactor = 0.02;
-
-	public int pictureReflectionOverlap = 2;
 
 	public int activeShapeBorderWidth = 3;
 

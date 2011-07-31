@@ -1,5 +1,5 @@
 /*
- * JFlow v0.2
+ * JFlow v0.3
  * Created by Tim De Pauw <http://pwnt.be/>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -45,8 +45,9 @@ public class Launcher implements Runnable {
 				MouseEvent me = e.getMouseEvent();
 				if (!me.isConsumed() && me.getButton() == MouseEvent.BUTTON1
 						&& me.getClickCount() == 1) {
-					JOptionPane.showMessageDialog(panel, e.getShape(), "Test",
-							JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(panel,
+							"You clicked on " + e.getShape() + ".",
+							"Event Test", JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 
