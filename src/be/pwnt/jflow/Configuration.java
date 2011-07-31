@@ -47,8 +47,6 @@ public class Configuration {
 
 	public boolean enableShapeSelection = true;
 
-	public boolean enableAlphaTransparency = false;
-
 	public int framesPerSecond = 25;
 
 	public double reflectionOpacity = 1.0 / 4;
