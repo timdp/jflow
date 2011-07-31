@@ -150,8 +150,7 @@ public class Picture extends Rectangle {
 					(int) Math.floor(topR.getY() + heightRight),
 					(int) Math.ceil(bottomR.getY() + heightRight),
 					(int) Math.ceil(bottomL.getY() + heightLeft) };
-			g.setColor(new Color(0f, 0f, 0f,
-					(float) (1 - config.reflectionOpacity)));
+			g.setColor(getOverlayColor(1 - config.reflectionOpacity, config));
 			g.fillPolygon(xPoints, yPoints, 4);
 		}
 		// shade & image
@@ -173,7 +172,7 @@ public class Picture extends Rectangle {
 			float shadeOpacity = (float) constrain(config.shadingFactor * z, 0,
 					1);
 			if (shadeOpacity > 0) {
-				g.setColor(new Color(0f, 0f, 0f, shadeOpacity));
+				g.setColor(getOverlayColor(shadeOpacity, config));
 				g.drawLine(xt, yt, xt, yb + yb);
 			}
 		}
@@ -192,6 +191,12 @@ public class Picture extends Rectangle {
 			g.drawPolygon(xPoints, yPoints, 4);
 			g.setStroke(oldStroke);
 		}
+	}
+
+	private static Color getOverlayColor(double opacity, Configuration config) {
+		Color base = config.backgroundColor;
+		return new Color(base.getRed(), base.getGreen(), base.getBlue(),
+				(int) Math.round(base.getAlpha() * opacity));
 	}
 
 	private static double constrain(double a, double min, double max) {
