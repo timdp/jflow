@@ -1,5 +1,5 @@
 /*
- * JFlow v0.3
+ * JFlow
  * Created by Tim De Pauw <http://pwnt.be/>
  * 
  * This program is free software: you can redistribute it and/or modify
