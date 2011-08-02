@@ -137,8 +137,8 @@ public class Picture extends Rectangle {
 				int xt = (int) Math.round(x0 + x);
 				double colY = dt * (mirror ? 1 - d : d);
 				double colH = heightLeft + (heightRight - heightLeft) * d;
-				int ryt0 = (int) Math.floor(y0 + colY + colH);
-				int ryt1 = (int) Math.floor(y0 + colY + colH + colH);
+				int ryt0 = (int) Math.round(y0 + colY + colH);
+				int ryt1 = (int) Math.round(y0 + colY + colH + colH);
 				g.drawImage(image, xt, ryt1, xt + 1, ryt0, xo, 0, xo + 1,
 						image.getHeight(), null);
 			}
@@ -146,10 +146,10 @@ public class Picture extends Rectangle {
 			int r = (int) Math.round(x0 + w);
 			int[] xPoints = new int[] { l, r, r, l };
 			int[] yPoints = new int[] {
-					(int) Math.floor(topL.getY() + heightLeft),
-					(int) Math.floor(topR.getY() + heightRight),
-					(int) Math.ceil(bottomR.getY() + heightRight),
-					(int) Math.ceil(bottomL.getY() + heightLeft) };
+					(int) Math.round(topL.getY() + heightLeft),
+					(int) Math.round(topR.getY() + heightRight),
+					(int) Math.round(bottomR.getY() + heightRight),
+					(int) Math.round(bottomL.getY() + heightLeft) };
 			g.setColor(getOverlayColor(1 - config.reflectionOpacity, config));
 			g.fillPolygon(xPoints, yPoints, 4);
 		}
