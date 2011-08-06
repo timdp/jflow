@@ -10,6 +10,10 @@
 	<property name="manifest" value="${dir.src}/META-INF/MANIFEST.MF" />
 	<property name="jar.base" value="${dir.dist}/jflow${suffix}.jar" />
 	<property name="jar.demo" value="${dir.dist}/jflow-demo${suffix}.jar" />
+	<target name="clean">
+		<delete dir="${dir.bin}" />
+		<delete dir="${dir.dist}" />
+	</target>
 	<target name="prepare">
 		<mkdir dir="${dir.bin}" />
 		<mkdir dir="${dir.dist}" />
@@ -20,11 +24,13 @@
 			<fileset dir="${dir.src}/${pkg.demo}/img" />
 		</copy>
 	</target>
-	<target name="jar" depends="compile">
+	<target name="main-jar" depends="compile">
 		<jar jarfile="${jar.base}" includes="${pkg.base}/**/*.class" excludes="${pkg.demo}/**" basedir="${dir.bin}" />
 	</target>
-	<target name="all" depends="jar">
-		<replaceregexp file="${manifest}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
+	<target name="demo-jar" depends="compile">
 		<jar jarfile="${jar.demo}" includes="${pkg.demo}/**" manifest="${manifest}" basedir="${dir.bin}" />
+	</target>
+	<target name="all" depends="main-jar, demo-jar">
+		<replaceregexp file="${manifest}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
 	</target>
 </project>
