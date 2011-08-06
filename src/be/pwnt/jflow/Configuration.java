@@ -37,9 +37,9 @@ public class Configuration {
 
 	public double scrollScale = 7.0 / 8;
 
-	public double scrollFactor = 3;
+	public double scrollFactor = 3.0;
 
-	public double autoScrollAmount = 0;
+	public double autoScrollAmount = 0.0;
 
 	public double dragEaseOutFactor = 4.0 / 3;
 
@@ -51,15 +51,17 @@ public class Configuration {
 
 	public double reflectionOpacity = 1.0 / 4;
 	
-	public double shadingFactor = 3;
+	public double shadingFactor = 3.0;
 
-	public double zoomScale = 2;
+	public double zoomScale = 2.0;
 
 	public double zoomFactor = 0.02;
-
+	
 	public int activeShapeBorderWidth = 3;
 
 	public Color backgroundColor = Color.black;
 
 	public Color activeShapeBorderColor = Color.yellow;
+	
+	public Color activeShapeOverlayColor = null;
 }

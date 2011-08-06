@@ -88,6 +88,10 @@ public class Picture extends Rectangle {
 	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
 			boolean active, Configuration config) {
 		Graphics2D g = (Graphics2D) graphics;
+		Stroke defaultStroke = g.getStroke();
+		Stroke activeStroke = (config.activeShapeBorderWidth > 0
+				&& config.activeShapeBorderColor != null ? new BasicStroke(
+				config.activeShapeBorderWidth) : null);
 		Point3D loc = getLocation();
 		RotationMatrix rot = getRotationMatrix();
 		List<Point3D> points = getPoints();
@@ -150,10 +154,23 @@ public class Picture extends Rectangle {
 					(int) Math.round(topR.getY() + heightRight),
 					(int) Math.round(bottomR.getY() + heightRight),
 					(int) Math.round(bottomL.getY() + heightLeft) };
+			if (active) {
+				if (config.activeShapeOverlayColor != null) {
+					g.setColor(config.activeShapeOverlayColor);
+					g.fillPolygon(xPoints, yPoints, 4);
+				}
+				// FIXME outer border doesn't receive overlay, so disable this
+				// if (activeStroke != null) {
+				// g.setColor(config.activeShapeBorderColor);
+				// g.setStroke(activeStroke);
+				// g.drawPolygon(xPoints, yPoints, 4);
+				// g.setStroke(defaultStroke);
+				// }
+			}
 			g.setColor(getOverlayColor(1 - config.reflectionOpacity, config));
 			g.fillPolygon(xPoints, yPoints, 4);
 		}
-		// shade & image
+		// image & shade
 		for (int x = 0; x < w; x++) {
 			double d = 1.0 * x / w;
 			int xo = (int) Math.round(d * image.getWidth());
@@ -185,11 +202,16 @@ public class Picture extends Rectangle {
 					(int) Math.round(topR.getY()),
 					(int) Math.round(bottomR.getY()),
 					(int) Math.round(bottomL.getY()) };
-			g.setColor(config.activeShapeBorderColor);
-			Stroke oldStroke = g.getStroke();
-			g.setStroke(new BasicStroke(config.activeShapeBorderWidth));
-			g.drawPolygon(xPoints, yPoints, 4);
-			g.setStroke(oldStroke);
+			if (config.activeShapeOverlayColor != null) {
+				g.setColor(config.activeShapeOverlayColor);
+				g.fillPolygon(xPoints, yPoints, 4);
+			}
+			if (activeStroke != null) {
+				g.setColor(config.activeShapeBorderColor);
+				g.setStroke(activeStroke);
+				g.drawPolygon(xPoints, yPoints, 4);
+				g.setStroke(defaultStroke);
+			}
 		}
 	}
 
