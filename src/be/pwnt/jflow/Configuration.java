@@ -64,4 +64,6 @@ public class Configuration {
 	public Color activeShapeBorderColor = Color.yellow;
 	
 	public Color activeShapeOverlayColor = null;
+	
+	public boolean highQuality = false;
 }

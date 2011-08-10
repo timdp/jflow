@@ -120,10 +120,17 @@ public class Picture extends Rectangle {
 	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
 			boolean active, Configuration config) {
 		Graphics2D g = (Graphics2D) graphics;
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_SPEED);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_OFF);
+		if (config.highQuality) {
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+		} else {
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_OFF);
+		}
 		Stroke defaultStroke = g.getStroke();
 		Stroke activeStroke = (config.activeShapeBorderWidth > 0
 				&& config.activeShapeBorderColor != null ? new BasicStroke(
