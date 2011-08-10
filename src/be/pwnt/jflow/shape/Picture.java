@@ -21,8 +21,11 @@ package be.pwnt.jflow.shape;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -83,15 +86,7 @@ public class Picture extends Rectangle {
 		return c < 0;
 	}
 
-	// FIXME only works if same x (no horizontal distortion)
-	@Override
-	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
-			boolean active, Configuration config) {
-		Graphics2D g = (Graphics2D) graphics;
-		Stroke defaultStroke = g.getStroke();
-		Stroke activeStroke = (config.activeShapeBorderWidth > 0
-				&& config.activeShapeBorderColor != null ? new BasicStroke(
-				config.activeShapeBorderWidth) : null);
+	private void project(Scene scene, Dimension surfaceSize) {
 		Point3D loc = getLocation();
 		RotationMatrix rot = getRotationMatrix();
 		List<Point3D> points = getPoints();
@@ -118,6 +113,26 @@ public class Picture extends Rectangle {
 		if (topL.getX() != bottomL.getX() || topR.getX() != bottomR.getX()) {
 			throw new RuntimeException();
 		}
+	}
+
+	// FIXME only works if same x (no horizontal distortion)
+	@Override
+	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
+			boolean active, Configuration config) {
+		Graphics2D g = (Graphics2D) graphics;
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,
+				RenderingHints.VALUE_RENDER_SPEED);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_OFF);
+		Stroke defaultStroke = g.getStroke();
+		Stroke activeStroke = (config.activeShapeBorderWidth > 0
+				&& config.activeShapeBorderColor != null ? new BasicStroke(
+				config.activeShapeBorderWidth) : null);
+		project(scene, surfaceSize);
+		Point3D topL = projectedPoints[0];
+		Point3D topR = projectedPoints[1];
+		Point3D bottomR = projectedPoints[2];
+		Point3D bottomL = projectedPoints[3];
 		double x0 = topL.getX();
 		double x1 = topR.getX();
 		double y0 = Math.min(topL.getY(), topR.getY());
@@ -133,6 +148,13 @@ public class Picture extends Rectangle {
 		if (mirror) {
 			dt = -dt;
 		}
+		int l = (int) Math.round(x0);
+		int r = (int) Math.round(x0 + w);
+		int[] xPoints = new int[] { l, r, r, l };
+		int[] yPoints = new int[] { (int) Math.round(topL.getY()),
+				(int) Math.round(topR.getY()),
+				(int) Math.round(bottomR.getY()),
+				(int) Math.round(bottomL.getY()) };
 		// reflection
 		if (config.reflectionOpacity > 0) {
 			for (int x = 0; x < w; x++) {
@@ -146,10 +168,7 @@ public class Picture extends Rectangle {
 				g.drawImage(image, xt, ryt1, xt + 1, ryt0, xo, 0, xo + 1,
 						image.getHeight(), null);
 			}
-			int l = (int) Math.round(x0);
-			int r = (int) Math.round(x0 + w);
-			int[] xPoints = new int[] { l, r, r, l };
-			int[] yPoints = new int[] {
+			int[] ryPoints = new int[] {
 					(int) Math.round(topL.getY() + heightLeft),
 					(int) Math.round(topR.getY() + heightRight),
 					(int) Math.round(bottomR.getY() + heightRight),
@@ -157,20 +176,20 @@ public class Picture extends Rectangle {
 			if (active) {
 				if (config.activeShapeOverlayColor != null) {
 					g.setColor(config.activeShapeOverlayColor);
-					g.fillPolygon(xPoints, yPoints, 4);
+					g.fillPolygon(xPoints, ryPoints, 4);
 				}
 				// FIXME outer border doesn't receive overlay, so disable this
 				// if (activeStroke != null) {
 				// g.setColor(config.activeShapeBorderColor);
 				// g.setStroke(activeStroke);
-				// g.drawPolygon(xPoints, yPoints, 4);
+				// g.drawPolygon(xPoints, ryPoints, 4);
 				// g.setStroke(defaultStroke);
 				// }
 			}
 			g.setColor(getOverlayColor(1 - config.reflectionOpacity, config));
-			g.fillPolygon(xPoints, yPoints, 4);
+			g.fillPolygon(xPoints, ryPoints, 4);
 		}
-		// image & shade
+		// image
 		for (int x = 0; x < w; x++) {
 			double d = 1.0 * x / w;
 			int xo = (int) Math.round(d * image.getWidth());
@@ -193,15 +212,20 @@ public class Picture extends Rectangle {
 				g.drawLine(xt, yt, xt, yb + yb);
 			}
 		}
+		// shade
+		if (config.shadingFactor > 0) {
+			double aL = constrain(topL.getZ() * config.shadingFactor, 0, 1);
+			double aR = constrain(topR.getZ() * config.shadingFactor, 0, 1);
+			Color cL = getOverlayColor(aL, config);
+			Color cR = getOverlayColor(aR, config);
+			Paint oldPaint = g.getPaint();
+			g.setPaint(new GradientPaint((float) Math.round(x0), 0f, cL,
+					(float) Math.round(x0 + w - 1), 0f, cR));
+			g.fillPolygon(xPoints, yPoints, 4);
+			g.setPaint(oldPaint);
+		}
 		// border
 		if (active) {
-			int l = (int) Math.round(x0);
-			int r = (int) Math.round(x0 + w);
-			int[] xPoints = new int[] { l, r, r, l };
-			int[] yPoints = new int[] { (int) Math.round(topL.getY()),
-					(int) Math.round(topR.getY()),
-					(int) Math.round(bottomR.getY()),
-					(int) Math.round(bottomL.getY()) };
 			if (config.activeShapeOverlayColor != null) {
 				g.setColor(config.activeShapeOverlayColor);
 				g.fillPolygon(xPoints, yPoints, 4);
