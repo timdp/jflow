@@ -114,13 +114,9 @@ public class Picture extends Rectangle {
 			throw new RuntimeException();
 		}
 	}
-
-	// FIXME only works if same x (no horizontal distortion)
-	@Override
-	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
-			boolean active, Configuration config) {
-		Graphics2D g = (Graphics2D) graphics;
-		if (config.highQuality) {
+	
+	private void setHighQuality(boolean on, Graphics2D g) {
+		if (on) {
 			g.setRenderingHint(RenderingHints.KEY_RENDERING,
 					RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -131,6 +127,13 @@ public class Picture extends Rectangle {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 					RenderingHints.VALUE_ANTIALIAS_OFF);
 		}
+	}
+
+	// FIXME only works if same x (no horizontal distortion)
+	@Override
+	public void paint(Graphics graphics, Scene scene, Dimension surfaceSize,
+			boolean active, Configuration config) {
+		Graphics2D g = (Graphics2D) graphics;
 		Stroke defaultStroke = g.getStroke();
 		Stroke activeStroke = (config.activeShapeBorderWidth > 0
 				&& config.activeShapeBorderColor != null ? new BasicStroke(
@@ -164,6 +167,7 @@ public class Picture extends Rectangle {
 				(int) Math.round(bottomL.getY()) };
 		// reflection
 		if (config.reflectionOpacity > 0) {
+			setHighQuality(false, g);
 			for (int x = 0; x < w; x++) {
 				double d = 1.0 * x / w;
 				int xo = (int) Math.round(d * image.getWidth());
@@ -196,6 +200,7 @@ public class Picture extends Rectangle {
 			g.setColor(getOverlayColor(1 - config.reflectionOpacity, config));
 			g.fillPolygon(xPoints, ryPoints, 4);
 		}
+		setHighQuality(config.highQuality, g);
 		// image
 		for (int x = 0; x < w; x++) {
 			double d = 1.0 * x / w;
