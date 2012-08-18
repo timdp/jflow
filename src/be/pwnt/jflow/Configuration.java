@@ -18,12 +18,19 @@
 
 package be.pwnt.jflow;
 
-import java.awt.Color;
+import java.awt.*;
 
 public class Configuration {
 	public enum VerticalAlignment {
 		TOP, MIDDLE, BOTTOM
 	}
+
+
+	//define how many shapes will show up.(other shapes will hide)
+    public int visibleShapeCount = 5;
+
+	//define oritentation of shapes, from left to right or from right to left.
+    public ComponentOrientation scrollDirection = ComponentOrientation.LEFT_TO_RIGHT;
 
 	public Shape[] shapes;
 
