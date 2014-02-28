@@ -26,9 +26,11 @@
 	</target>
 	<target name="main-jar" depends="compile">
 		<jar jarfile="${jar.base}" includes="${pkg.base}/**/*.class" excludes="${pkg.demo}/**" basedir="${dir.bin}" />
+		<signjar jar="${jar.base}" keystore="keystore" alias="timdp" storepass="secret" />
 	</target>
 	<target name="demo-jar" depends="compile">
 		<jar jarfile="${jar.demo}" includes="${pkg.demo}/**" manifest="${manifest}" basedir="${dir.bin}" />
+		<signjar jar="${jar.demo}" keystore="keystore" alias="timdp" storepass="secret" />
 	</target>
 	<target name="all" depends="main-jar, demo-jar">
 		<replaceregexp file="${manifest}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
