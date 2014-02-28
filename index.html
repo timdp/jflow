@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+<title>JFlow: Cover Flow for Java Swing</title>
+<style type="text/css">
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background: white;
+	color: black;
+	font: 18px sans-serif;
+}
+#main {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 720px;
+	height: 320px;
+	margin: -160px 0 0 -360px;
+	z-index: 2;
+	box-shadow: 0 3px 50px silver;
+	-webkit-box-shadow: 0 3px 50px silver;
+	-moz-box-shadow: 0 3px 50px silver;
+}
+p {
+	text-align: center;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	bottom: 50px;
+	margin: 0;
+}
+a {
+	color: black;
+}
+iframe {
+	border: 0;
+	overflow: hidden;
+}
+iframe#fb {
+	width: 100px;
+	height: 65px;
+	position: absolute;
+	left: 50px;
+	bottom: 125px;
+	z-index: 1;
+}
+#gpo {
+	position: absolute;
+	left: 50px;
+	bottom: 50px;
+	z-index: 1;
+}
+</style>
+</head>
+<body>
+<div id="main"><applet code="be.pwnt.jflow.demo.Applet" width="720" height="320"
+archive="dist/jflow-trunk.jar,dist/jflow-demo-trunk.jar"></applet></div>
+<p>JFlow is free software. Its source code is available from
+<a href="http://github.com/timdp/jflow">GitHub</a>.</p>
+<iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Ftimdp.github.io%2Fjflow%2F&amp;layout=box_count&amp;show_faces=false&amp;width=200&amp;action=like&amp;colorscheme=light&amp;height=65"
+scrolling="no" frameborder="0" allowTransparency="true" id="fb"></iframe>
+<div id="gpo"><g:plusone size="tall"></g:plusone></div>
+</body>
+</html>
