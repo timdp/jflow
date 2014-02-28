@@ -7,7 +7,8 @@
 	<property name="dir.dist" value="dist" />
 	<property name="pkg.base" value="be/pwnt/jflow" />
 	<property name="pkg.demo" value="${pkg.base}/demo" />
-	<property name="manifest" value="${dir.src}/META-INF/MANIFEST.MF" />
+	<property name="manifest.base" value="${dir.src}/META-INF/JFLOW.MF" />
+	<property name="manifest.demo" value="${dir.src}/META-INF/DEMO.MF" />
 	<property name="jar.base" value="${dir.dist}/jflow${suffix}.jar" />
 	<property name="jar.demo" value="${dir.dist}/jflow-demo${suffix}.jar" />
 	<target name="clean">
@@ -25,14 +26,13 @@
 		</copy>
 	</target>
 	<target name="main-jar" depends="compile">
-		<jar jarfile="${jar.base}" includes="${pkg.base}/**/*.class" excludes="${pkg.demo}/**" basedir="${dir.bin}" />
+		<jar jarfile="${jar.base}" includes="${pkg.base}/**/*.class" excludes="${pkg.demo}/**" manifest="${manifest.base}" basedir="${dir.bin}" />
 		<signjar jar="${jar.base}" keystore="keystore" alias="timdp" storepass="secret" />
 	</target>
 	<target name="demo-jar" depends="compile">
-		<jar jarfile="${jar.demo}" includes="${pkg.demo}/**" manifest="${manifest}" basedir="${dir.bin}" />
+		<replaceregexp file="${manifest.demo}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
+		<jar jarfile="${jar.demo}" includes="${pkg.demo}/**" manifest="${manifest.demo}" basedir="${dir.bin}" />
 		<signjar jar="${jar.demo}" keystore="keystore" alias="timdp" storepass="secret" />
 	</target>
-	<target name="all" depends="main-jar, demo-jar">
-		<replaceregexp file="${manifest}" match="jflow\S*\.jar" replace="jflow${suffix}.jar" byline="true" />
-	</target>
+	<target name="all" depends="main-jar, demo-jar" />
 </project>
