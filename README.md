@@ -2,7 +2,7 @@ JFlow
 =====
 
 **JFlow** implements a *Cover Flow*-like user interface in *Java Swing*. A
-[demo](http://pwnt.be/lab/jflow/) is available.
+[demo](http://timdp.github.io/jflow/) is available.
 
 Quick Usage Instructions
 ------------------------
@@ -35,7 +35,7 @@ procedure is also used in the `be.pwnt.jflow.demo` package.
 Author
 ------
 
-[Tim De Pauw](http://pwnt.be/)
+[Tim De Pauw](http://tmdpw.eu/)
 
 License
 -------
