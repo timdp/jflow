@@ -18,12 +18,8 @@
 
 package be.pwnt.jflow;
 
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Timer;
@@ -39,8 +35,8 @@ import be.pwnt.jflow.geometry.RotationMatrix;
 import be.pwnt.jflow.shape.Picture;
 
 @SuppressWarnings("serial")
-public class JFlowPanel extends JPanel implements MouseListener,
-		MouseMotionListener {
+public class JFlowPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener
+{
 	private Collection<ShapeListener> listeners;
 
 	private Configuration config;
@@ -82,6 +78,8 @@ public class JFlowPanel extends JPanel implements MouseListener,
 		}
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		//to make it work with touch pad of macbook.
+        addMouseWheelListener(this);
 	}
 
 	public void addListener(ShapeListener listener) {
@@ -121,7 +119,9 @@ public class JFlowPanel extends JPanel implements MouseListener,
 	// FIXME only works for Pictures
 	private synchronized void updateShapes() {
 		double maxHeight = 0;
-		for (Shape shape : config.shapes) {
+		for (int i = 0; i < config.visibleShapeCount; i++)
+        {
+            Shape shape = config.shapes[getShapeIndex(i)];
 			if (shape instanceof Picture) {
 				Picture pic = (Picture) shape;
 				double height = config.shapeWidth * pic.getHeight()
@@ -131,10 +131,11 @@ public class JFlowPanel extends JPanel implements MouseListener,
 				}
 			}
 		}
-		for (int i = 0; i < config.shapes.length; i++) {
-			if (config.shapes[i] instanceof Picture) {
-				Picture pic = (Picture) config.shapes[i];
-				double j = transpose(i) - config.shapes.length / 2
+		for (int i = 0; i < config.visibleShapeCount; i++) {
+            int shapeIndex = getShapeIndex(i);
+			if (config.shapes[shapeIndex] instanceof Picture) {
+				Picture pic = (Picture) config.shapes[shapeIndex];
+				double j = i - config.visibleShapeCount / 2
 						+ scrollDelta;
 				j = (j < 0 ? -1 : 1)
 						* Math.pow(Math.abs(j), config.scrollScale);
@@ -144,8 +145,7 @@ public class JFlowPanel extends JPanel implements MouseListener,
 				} else if (j > 0) {
 					comp = -config.shapeWidth / 2;
 				}
-				double height = config.shapeWidth * pic.getHeight()
-						/ pic.getWidth();
+				double height = config.shapeWidth * pic.getHeight() / pic.getWidth();
 				double top, bottom;
 				switch (config.verticalShapeAlignment) {
 				case TOP:
@@ -160,17 +160,12 @@ public class JFlowPanel extends JPanel implements MouseListener,
 					top = -height / 2;
 					bottom = height / 2;
 				}
-				double z = -config.zoomFactor
-						* Math.pow(Math.abs(j), config.zoomScale);
-				Point3D topLeft = new Point3D(-config.shapeWidth / 2 + comp,
-						top, 0);
-				Point3D bottomRight = new Point3D(config.shapeWidth / 2 + comp,
-						bottom, 0);
+				double z = -config.zoomFactor * Math.pow(Math.abs(j), config.zoomScale);
+				Point3D topLeft = new Point3D(-config.shapeWidth / 2 + (config.scrollDirection == ComponentOrientation.LEFT_TO_RIGHT ? -1 : 1) * comp, top, 0);
+				Point3D bottomRight = new Point3D(config.shapeWidth / 2 + (config.scrollDirection == ComponentOrientation.LEFT_TO_RIGHT ? -1 : 1) * comp, bottom, 0);
 				pic.setCoordinates(topLeft, bottomRight);
-				pic.setRotationMatrix(new RotationMatrix(0,
-						-config.shapeRotation * j, 0));
-				pic.setLocation(new Point3D(config.shapeSpacing * j - comp, 0,
-						z));
+                pic.setRotationMatrix(new RotationMatrix(0, (config.scrollDirection == ComponentOrientation.LEFT_TO_RIGHT ? 1 : -1) * config.shapeRotation * j, 0));
+                pic.setLocation(new Point3D( (config.scrollDirection == ComponentOrientation.LEFT_TO_RIGHT ? 1 : -1) * (- config.shapeSpacing * j + comp), 0, z));
 			}
 		}
 		checkActiveShape();
@@ -199,23 +194,16 @@ public class JFlowPanel extends JPanel implements MouseListener,
 	public synchronized void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		// respect stacking order
-		for (int i = 0; i < config.shapes.length / 2; i++) {
-			paintShape(config.shapes[untranspose(i)], g);
-			paintShape(
-					config.shapes[untranspose(config.shapes.length - 1 - i)], g);
+		for (int i = 0; i < config.visibleShapeCount / 2; i++) {
+			paintShape(config.shapes[getShapeIndex(i)], g);
+			paintShape(config.shapes[getShapeIndex(config.visibleShapeCount - 1 - i)], g);
 		}
-		paintShape(config.shapes[untranspose(config.shapes.length / 2)], g);
+		paintShape(config.shapes[getShapeIndex(config.visibleShapeCount / 2)], g);
 	}
 
-	// physical (array) to logical (visual)
-	private int transpose(int index) {
-		return (index + shapeArrayOffset) % config.shapes.length;
-	}
-
-	// logical to physical
-	private int untranspose(int index) {
-		return (index - shapeArrayOffset + config.shapes.length)
-				% config.shapes.length;
+	// get shape index by ui position
+	private int getShapeIndex(int index) {
+		return (index - shapeArrayOffset + config.shapes.length) % config.shapes.length;
 	}
 
 	private void paintShape(Shape shape, Graphics g) {
@@ -296,7 +284,14 @@ public class JFlowPanel extends JPanel implements MouseListener,
 		checkActiveShape();
 	}
 
-	private class AutoScroller extends TimerTask {
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        dragRate = config.scrollFactor * e.getUnitsToScroll() / getWidth();
+        setScrollRate(getScrollRate()
+                + (config.inverseScrolling ? dragRate : -dragRate));
+    }
+
+    private class AutoScroller extends TimerTask {
 		@Override
 		public void run() {
 			if (!dragging) {
@@ -309,9 +304,12 @@ public class JFlowPanel extends JPanel implements MouseListener,
 		@Override
 		public void run() {
 			dragRate /= config.dragEaseOutFactor;
+            if (dragRate < 1E-10)
+                dragRate = 0;
 			if (dragRate != 0) {
 				setScrollRate(getScrollRate() - dragRate);
 			} else {
+                setScrollRate(0);
 				easingTimer.cancel();
 			}
 		}
@@ -325,15 +323,15 @@ public class JFlowPanel extends JPanel implements MouseListener,
 				Shape newActiveShape = null;
 				if (mp != null) {
 					Point3D p = new Point3D(mp.getX(), mp.getY(), 0);
-					int i = untranspose(config.shapes.length / 2);
+					int i = getShapeIndex(config.visibleShapeCount / 2);
 					if (config.shapes[i].contains(p)) {
 						newActiveShape = config.shapes[i];
 					}
 					i = 1;
-					while (i <= config.shapes.length / 2
+					while (i <= config.visibleShapeCount / 2
 							&& newActiveShape == null) {
-						int j = untranspose(config.shapes.length / 2 - i);
-						int k = untranspose(config.shapes.length / 2 + i);
+						int j = getShapeIndex(config.visibleShapeCount / 2 - i);
+						int k = getShapeIndex(config.visibleShapeCount / 2 + i);
 						if (config.shapes[j].contains(p)) {
 							newActiveShape = config.shapes[j];
 						} else if (config.shapes[k].contains(p)) {

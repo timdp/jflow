@@ -68,6 +68,8 @@ public class Scene {
 		d.rotate(rot);
 		// maintain aspect ratio
 		double side = Math.max(surfaceSize.getWidth(), surfaceSize.getHeight());
+		//make scene can always show all shapes.
+        side = Math.min(Math.min(surfaceSize.getWidth(), surfaceSize.getHeight()) * 8 / 3, side);
 		double xo = (surfaceSize.getWidth() - side) / 2;
 		double yo = (surfaceSize.getHeight() - side) / 2;
 		return new Point3D(xo

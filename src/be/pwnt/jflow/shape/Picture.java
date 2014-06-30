@@ -102,10 +102,11 @@ public class Picture extends Rectangle {
 		}
 		// XXX assumes too much about order
 		Point3D bottomR = proj[0], bottomL = proj[1], topL = proj[2], topR = proj[3];
-		if (bottomR.getX() < 0 || bottomL.getX() >= surfaceSize.getWidth()) {
-			projectedPoints[0] = null;
-			return;
-		}
+		//comments this to prevent null point exception.
+//		if (bottomR.getX() < 0 || bottomL.getX() >= surfaceSize.getWidth()) {
+//			projectedPoints[0] = null;
+//			return;
+//		}
 		projectedPoints[0] = topL;
 		projectedPoints[1] = topR;
 		projectedPoints[2] = bottomR;
@@ -217,14 +218,20 @@ public class Picture extends Rectangle {
 			int yb = (int) Math.round(y0 + ym);
 			g.drawImage(image, xt, yt, xt + 1, yb, xo, 0, xo + 1,
 					image.getHeight(), null);
-			float shadeOpacity = (float) constrain(config.shadingFactor * z, 0,
-					1);
-			if (shadeOpacity > 0) {
-				g.setColor(getOverlayColor(shadeOpacity, config));
-				g.drawLine(xt, yt, xt, yb + yb);
-			}
 		}
-		// shade
+
+        // gradient for image, drawLine has performance issue in MacOS.
+        if (config.shadingFactor > 0 && dt != 0) {
+            Color transparentColor = getOverlayColor(0, config);
+            Color nonTransparentColor = getOverlayColor(0.9, config);
+            g.setPaint(new GradientPaint((float)x0, (float)y0, mirror ? nonTransparentColor: transparentColor,
+                                         (float)(x0 + w), (float)y0, mirror ? transparentColor: nonTransparentColor));
+            g.fillPolygon(new int[]{ (int)topL.getX(), (int)bottomL.getX(), (int)bottomR.getX(), (int)topR.getX() },
+                          new int[]{ (int)topL.getY(), (int)bottomL.getY(), (int)bottomR.getY(), (int)topR.getY()},
+                          4);
+        }
+
+		// shade based on z
 		if (config.shadingFactor > 0) {
 			double aL = constrain(topL.getZ() * config.shadingFactor, 0, 1);
 			double aR = constrain(topR.getZ() * config.shadingFactor, 0, 1);
